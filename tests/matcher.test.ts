@@ -70,10 +70,16 @@ describe('isCompanyMatching', () => {
   });
 
   describe('Korean variations', () => {
-    it('should match "숭실대학교" and "숭실대"', () => {
+    it('should match any company containing "숭실"', () => {
+      expect(isCompanyMatching('숭실')).toBe(true);
+      expect(isCompanyMatching('@숭실')).toBe(true);
       expect(isCompanyMatching('숭실대학교')).toBe(true);
       expect(isCompanyMatching('숭실대')).toBe(true);
       expect(isCompanyMatching('숭실대학교 금융학부')).toBe(true);
+      expect(isCompanyMatching('숭실대학교 컴퓨터학부')).toBe(true);
+      expect(isCompanyMatching('포도연구원 @ 숭실')).toBe(true);
+      expect(isCompanyMatching('숭실대 동문회')).toBe(true);
+      expect(isCompanyMatching('숭실인')).toBe(true);
     });
   });
 

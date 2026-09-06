@@ -19,6 +19,7 @@ describe('AutoInviteService', () => {
           { login: 'user-no-company', id: 104, html_url: 'https://github.com/user-no-company' },
           { login: 'user-soongsil-match', id: 105, html_url: 'https://github.com/user-soongsil-match' },
           { login: 'user-soogsil-typo-match', id: 106, html_url: 'https://github.com/user-soogsil-typo-match' },
+          { login: 'user-korean-soongsil-match', id: 107, html_url: 'https://github.com/user-korean-soongsil-match' },
         ];
       }
       if (method === listMembers) {
@@ -40,6 +41,7 @@ describe('AutoInviteService', () => {
         'user-no-company': { login: 'user-no-company', id: 104, company: null },
         'user-soongsil-match': { login: 'user-soongsil-match', id: 105, company: 'Soongsil University' },
         'user-soogsil-typo-match': { login: 'user-soogsil-typo-match', id: 106, company: 'Soogsil University' },
+        'user-korean-soongsil-match': { login: 'user-korean-soongsil-match', id: 107, company: '숭실대학교 IT대학' },
       };
       return { data: mockProfiles[username] || { login: username, id: 999, company: null } };
     });
@@ -86,16 +88,17 @@ describe('AutoInviteService', () => {
 
     const summary = await service.run();
 
-    expect(summary.totalFollowers).toBe(6);
+    expect(summary.totalFollowers).toBe(7);
     expect(summary.alreadyMembers).toBe(1);
     expect(summary.alreadyInvited).toBe(1);
-    expect(summary.companyMatched).toBe(2);
+    expect(summary.companyMatched).toBe(3);
 
     // Invited users
-    expect(summary.invited).toHaveLength(2);
+    expect(summary.invited).toHaveLength(3);
     expect(summary.invited.map((u) => u.login)).toEqual([
       'user-soongsil-match',
       'user-soogsil-typo-match',
+      'user-korean-soongsil-match',
     ]);
     expect(summary.invited.every((u) => u.status === 'invited')).toBe(true);
 
@@ -111,7 +114,7 @@ describe('AutoInviteService', () => {
     expect(skippedReasons['no_company']).toBe(1);
 
     // Verify createInvitation API calls
-    expect(createInvitation).toHaveBeenCalledTimes(2);
+    expect(createInvitation).toHaveBeenCalledTimes(3);
     expect(createInvitation).toHaveBeenCalledWith({
       org: 'Soongsil-Developers',
       invitee_id: 105,
@@ -120,6 +123,11 @@ describe('AutoInviteService', () => {
     expect(createInvitation).toHaveBeenCalledWith({
       org: 'Soongsil-Developers',
       invitee_id: 106,
+      role: 'direct_member',
+    });
+    expect(createInvitation).toHaveBeenCalledWith({
+      org: 'Soongsil-Developers',
+      invitee_id: 107,
       role: 'direct_member',
     });
   });
@@ -140,7 +148,7 @@ describe('AutoInviteService', () => {
     const summary = await service.run();
 
     expect(summary.dryRun).toBe(true);
-    expect(summary.invited).toHaveLength(2);
+    expect(summary.invited).toHaveLength(3);
     expect(summary.invited.every((u) => u.status === 'dry_run')).toBe(true);
     expect(createInvitation).not.toHaveBeenCalled();
   });
@@ -162,7 +170,7 @@ describe('AutoInviteService', () => {
     const summary = await service.run();
 
     expect(summary.invited).toHaveLength(0);
-    expect(summary.failed).toHaveLength(2);
+    expect(summary.failed).toHaveLength(3);
     expect(summary.failed[0].error).toContain('Rate limit or invitation quota exceeded');
   });
 });
