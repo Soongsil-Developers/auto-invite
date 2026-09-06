@@ -7,6 +7,7 @@ describe('AutoInviteService', () => {
     const listFollowersForUser = vi.fn();
     const listMembers = vi.fn();
     const listPendingInvitations = vi.fn();
+    const listOutsideCollaborators = vi.fn();
     const getByUsername = vi.fn();
     const createInvitation = vi.fn();
 
@@ -15,6 +16,7 @@ describe('AutoInviteService', () => {
         return [
           { login: 'user-already-member', id: 101, html_url: 'https://github.com/user-already-member' },
           { login: 'user-already-invited', id: 102, html_url: 'https://github.com/user-already-invited' },
+          { login: 'user-already-collaborator', id: 108, html_url: 'https://github.com/user-already-collaborator' },
           { login: 'user-unrelated-org', id: 103, html_url: 'https://github.com/user-unrelated-org' },
           { login: 'user-no-company', id: 104, html_url: 'https://github.com/user-no-company' },
           { login: 'user-soongsil-match', id: 105, html_url: 'https://github.com/user-soongsil-match' },
@@ -25,6 +27,11 @@ describe('AutoInviteService', () => {
       if (method === listMembers) {
         return [
           { login: 'user-already-member', id: 101 },
+        ];
+      }
+      if (method === listOutsideCollaborators) {
+        return [
+          { login: 'user-already-collaborator', id: 108 },
         ];
       }
       if (method === listPendingInvitations) {
@@ -57,6 +64,7 @@ describe('AutoInviteService', () => {
         },
         orgs: {
           listMembers,
+          listOutsideCollaborators,
           listPendingInvitations,
           createInvitation,
         },
@@ -88,8 +96,8 @@ describe('AutoInviteService', () => {
 
     const summary = await service.run();
 
-    expect(summary.totalFollowers).toBe(7);
-    expect(summary.alreadyMembers).toBe(1);
+    expect(summary.totalFollowers).toBe(8);
+    expect(summary.alreadyMembers).toBe(2);
     expect(summary.alreadyInvited).toBe(1);
     expect(summary.companyMatched).toBe(3);
 
@@ -108,7 +116,7 @@ describe('AutoInviteService', () => {
       return acc;
     }, {} as Record<string, number>);
 
-    expect(skippedReasons['already_member']).toBe(1);
+    expect(skippedReasons['already_member']).toBe(2);
     expect(skippedReasons['already_invited']).toBe(1);
     expect(skippedReasons['company_mismatch']).toBe(1);
     expect(skippedReasons['no_company']).toBe(1);

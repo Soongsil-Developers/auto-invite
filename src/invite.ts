@@ -51,10 +51,13 @@ export class AutoInviteService {
   }
 
   /**
-   * Retrieves all current members of the organization.
+   * Retrieves all current members and outside collaborators of the organization (People tab).
    * Returns a set of lowercased logins.
    */
   async getExistingMemberLogins(): Promise<Set<string>> {
+    const memberSet = new Set<string>();
+
+    // 1. Fetch active organization members
     try {
       const members = await this.octokit.paginate(
         this.octokit.rest.orgs.listMembers,
@@ -64,11 +67,31 @@ export class AutoInviteService {
         }
       );
 
-      return new Set(members.map((m) => m.login.toLowerCase()));
+      for (const m of members) {
+        memberSet.add(m.login.toLowerCase());
+      }
     } catch (error: any) {
       console.warn(`[WARN] Could not retrieve existing members: ${error?.message || error}`);
-      return new Set();
     }
+
+    // 2. Fetch outside collaborators (also listed under People tab)
+    try {
+      const collaborators = await this.octokit.paginate(
+        this.octokit.rest.orgs.listOutsideCollaborators,
+        {
+          org: this.org,
+          per_page: 100,
+        }
+      );
+
+      for (const c of collaborators) {
+        memberSet.add(c.login.toLowerCase());
+      }
+    } catch {
+      // Outside collaborators might be restricted or empty; gracefully ignore
+    }
+
+    return memberSet;
   }
 
   /**
