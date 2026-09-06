@@ -1,0 +1,46 @@
+name: Auto Invite Soongsil Followers
+
+on:
+  schedule:
+    # 매일 UTC 00:00 (한국 시간 오전 09:00) 주기적 실행
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry Run 모드 (true일 경우 실제 초대를 보내지 않고 대상자만 확인)'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  invite-followers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Run follower auto-invite
+        env:
+          # Organization 멤버 초대 권한(admin:org)을 가진 Personal Access Token 또는 GitHub App 토큰
+          ORG_ADMIN_TOKEN: ${{ secrets.ORG_ADMIN_TOKEN }}
+          ORG_NAME: 'Soongsil-Developers'
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: pnpm start

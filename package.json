@@ -1,0 +1,25 @@
+{
+  "name": "soongsil-followers-auto-invite",
+  "version": "1.0.0",
+  "description": "Auto-invites Soongsil University followers to the GitHub organization",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "keywords": ["github-actions", "soongsil", "auto-invite"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^21.1.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  }
+}
